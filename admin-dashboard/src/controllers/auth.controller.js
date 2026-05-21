@@ -1,0 +1,212 @@
+const userModel = require('../models/user.model');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
+  async function registerUser(req, res) {
+
+    const { username, email, password, role = 'user' } = req.body;
+
+    const isUserAlreadyExists = await userModel.findOne({
+        $or:[
+            {username},
+            {email}
+        ]
+    })
+
+    if(isUserAlreadyExists){
+        return res.status(409).json({
+            message: 'User already exists'
+        })
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+
+    const user = await userModel.create({
+        username,
+        email,
+        password: hash,
+        role
+    })
+
+    const token = jwt.sign({
+        id: user._id,
+        role: user.role
+    }, process.env.JWT_SECRET)
+
+    res.cookie('token', token, {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax'
+})
+
+    res.status(201).json({
+        message: 'User registered successfully',
+        user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        }
+    })
+}
+
+async function loginUser(req, res){
+
+    const {username, email, password} = req.body;
+    const user = await userModel.findOne({
+        $or:[
+            {username},
+            {email}
+        ]
+    })
+    if(!user){
+        return res.status(401).json({
+            message: "Invalid credentials"
+        })
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if(!isPasswordValid){
+        return res.status(401).json({
+            message: "Invalid credentials"
+        })
+    }
+
+    const token = jwt.sign({
+        id: user._id,
+        role: user.role
+    }, process.env.JWT_SECRET)
+
+    res.cookie('token', token, {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax'
+})
+
+    res.status(200).json({
+        message: 'User logged in successfully',
+        user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        }
+    })
+}
+
+    async function getProfile(req, res) {
+
+    try {
+
+        const user = await userModel.findById(req.user.id);
+
+        res.status(200).json({
+            message: "Profile fetched successfully",
+            user
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+}
+
+async function adminDashboard(req, res) {
+
+    try {
+
+        const admin = await userModel
+            .findById(req.user.id)
+            .select('-password');
+
+        res.status(200).json({
+            message: "Welcome Admin",
+            admin
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: "Access denied. Admin only."
+        });
+
+    }
+
+}
+async function logoutUser(req, res) {
+
+    try {
+
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Logged out successfully'
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+}
+
+async function deleteUser(req, res) {
+
+    try {
+
+        const userId = req.params.id;
+
+        await userModel.findByIdAndDelete(userId);
+
+        res.status(200).json({
+            message: 'User deleted successfully'
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+}
+
+async function getAllUsers(req, res) {
+
+    try {
+
+        const users = await userModel
+            .find()
+            .select('-password');
+
+        res.status(200).json({
+            totalUsers: users.length,
+            users
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+}
+
+
+module.exports = {registerUser, loginUser, getProfile, adminDashboard, logoutUser, getAllUsers, deleteUser}
