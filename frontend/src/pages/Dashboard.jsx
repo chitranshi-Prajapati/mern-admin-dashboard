@@ -19,7 +19,7 @@ const Dashboard = () => {
       try {
 
         const response = await axios.get(
-          'http://localhost:3000/api/auth/users',
+          `${import.meta.env.VITE_API_URL}/api/auth/users`,
           {
             withCredentials: true
           }
@@ -44,7 +44,7 @@ const Dashboard = () => {
     try {
 
       await axios.get(
-        'http://localhost:3000/api/auth/logout',
+        `${import.meta.env.VITE_API_URL}/api/auth/logout`,
         {
           withCredentials: true
         }
@@ -62,26 +62,26 @@ const Dashboard = () => {
 
   const handleDelete = async (id) => {
 
-  try {
+    try {
 
-    await axios.delete(
-      `http://localhost:3000/api/auth/users/${id}`,
-      {
-        withCredentials: true
-      }
-    )
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/auth/users/${id}`,
+        {
+          withCredentials: true
+        }
+      )
 
-    setUsers(
-      users.filter((user) => user._id !== id)
-    )
+      setUsers(
+        users.filter((user) => user._id !== id)
+      )
 
-  } catch (error) {
+    } catch (error) {
 
-    console.log(error)
+      console.log(error)
+
+    }
 
   }
-
-}
 
   return (
 
@@ -232,7 +232,7 @@ const Dashboard = () => {
                   <td className='py-3'>
 
                     <button
-                    onClick={() => handleDelete(user._id)}
+                      onClick={() => handleDelete(user._id)}
                       className='bg-red-500 text-white px-4 py-1 rounded-lg'
                     >
                       Delete

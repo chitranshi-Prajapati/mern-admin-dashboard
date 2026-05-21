@@ -18,12 +18,12 @@ const handleSubmit = async (e) => {
   try {
 
     const response = await axios.post(
-      'http://localhost:3000/api/auth/register',
-      formData,
-      {
-        withCredentials: true
-      }
-    )
+  `${import.meta.env.VITE_API_URL}/api/auth/register`,
+  formData,
+  {
+    withCredentials: true
+  }
+)
 
     console.log(response.data)
 
