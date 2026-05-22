@@ -5,8 +5,13 @@ const cors = require('cors');
 
 const app = express();
 
+const cors = require("cors");
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    "http://localhost:5173",
+    "https://mern-admin-dashboard-one.vercel.app"
+  ],
   credentials: true
 }));
 
