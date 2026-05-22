@@ -18,15 +18,15 @@ const Login = () => {
   try {
 
     const response = await axios.post(
-      '`${import.meta.env.VITE_API_URL}/api/auth/login',
-      {
-        username: formData.identifier,
-        password: formData.password
-      },
-      {
-        withCredentials: true
-      }
-    )
+  `${import.meta.env.VITE_API_URL}/api/auth/login`,
+  {
+    username: formData.identifier,
+    password: formData.password
+  },
+  {
+    withCredentials: true
+  }
+)
 
     console.log(response.data)
     navigate('/dashboard')
